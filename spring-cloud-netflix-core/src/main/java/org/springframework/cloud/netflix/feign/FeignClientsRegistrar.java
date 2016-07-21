@@ -40,6 +40,7 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.ResourceLoaderAware;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
+import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.core.type.ClassMetadata;
@@ -189,14 +190,9 @@ class FeignClientsRegistrar implements ImportBeanDefinitionRegistrar,
 	}
 
 	private void validate(Map<String, Object> attributes) {
-		if (StringUtils.hasText((String) attributes.get("value"))) {
-			Assert.isTrue(!StringUtils.hasText((String) attributes.get("serviceId")),
-					"Either name (serviceId) or value can be specified, but not both");
-		}
-		if (StringUtils.hasText((String) attributes.get("name"))) {
-			Assert.isTrue(!StringUtils.hasText((String) attributes.get("serviceId")),
-					"Either name or serviceId can be specified, but not both");
-		}
+		AnnotationAttributes annotation = AnnotationAttributes.fromMap(attributes);
+		// This blows up if an aliased property is overspecified
+		annotation.getAliasedString("name", FeignClient.class, null);
 	}
 
 	private String getName(Map<String, Object> attributes) {
